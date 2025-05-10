@@ -1,21 +1,50 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
-import { fixupConfigRules } from "@eslint/compat";
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import stylisticTs from '@stylistic/eslint-plugin-ts'
+import importPlugin from 'eslint-plugin-import'
+import tseslint from 'typescript-eslint'
 
-export default [
-  {files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"]},
-  { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
-  {languageOptions: { globals: globals.browser }},
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...fixupConfigRules(pluginReactConfig),
-  {
-    rules: {
-      semi: 2,
-      eqeqeq: "error",
-      quotes: 1,
-    }
-  }
-];
+export default tseslint.config(
+    { ignores: ['dist'] },
+    {
+      extends: [js.configs.recommended, ...tseslint.configs.recommended],
+      files: ['**/*.{ts,tsx}'],
+      languageOptions: {
+        ecmaVersion: 2020,
+        globals: globals.browser,
+      },
+      plugins: {
+        'react-hooks': reactHooks,
+        'react-refresh': reactRefresh,
+        '@stylistic/ts': stylisticTs,
+        'import': importPlugin,
+      },
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json', '.svg'],
+      },
+      settings: {
+        'import/resolver': {
+          typescript: { project: './tsconfig.json' },
+        },
+      },
+      rules: {
+        ...reactHooks.configs.recommended.rules,
+        'react-refresh/only-export-components': [
+          'warn',
+          { allowConstantExport: true },
+        ],
+        '@stylistic/ts/indent': ['error', 4],
+        '@stylistic/ts/quotes': ['error', 'double', { avoidEscape: true }],
+        '@stylistic/ts/semi': ['error', 'always'],
+        'import/order': ['error', {
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        }],
+        'import/no-unresolved': 'error',
+        'import/newline-after-import': 'error',
+        'import/no-duplicates': 'error',
+      },
+    },
+)
